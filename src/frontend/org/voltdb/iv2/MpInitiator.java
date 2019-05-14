@@ -161,19 +161,22 @@ public class MpInitiator extends BaseInitiator<MpScheduler> implements Promotabl
                                     new DumpMessage());
                             throw new RuntimeException("Failing promoted MPI node with unresolvable repair condition.");
                         }
-                        tmLog.debug(m_whoami + " restarting MP transaction: " + restartTxns.get(0));
+                        if (tmLog.isDebugEnabled()) {
+                            tmLog.debug(m_whoami + " restarting MP transaction: " + restartTxns.get(0));
+                        }
                         Iv2InitiateTaskMessage firstMsg = restartTxns.get(0);
                         assert(firstMsg.getTruncationHandle() == TransactionInfoBaseMessage.UNUSED_TRUNC_HANDLE);
                         m_initiatorMailbox.repairReplicasWith(null, firstMsg);
                     }
-                    tmLog.info(m_whoami
-                             + "finished leader promotion. Took "
-                             + (System.currentTimeMillis() - startTime) + " ms.");
 
                     // THIS IS where map cache should be updated, not
                     // in the promotion algorithm.
                     LeaderCacheWriter iv2masters = new LeaderCache(m_messenger.getZK(), "MpInitiator", m_zkMailboxNode);
                     iv2masters.put(m_partitionId, m_initiatorMailbox.getHSId());
+                    tmLog.info(m_whoami
+                            + "finished leader promotion. Took "
+                            + (System.currentTimeMillis() - startTime) + " ms.");
+
                     TTLManager.instance().scheduleTTLTasks();
                 }
                 else {
